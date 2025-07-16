@@ -1,0 +1,6 @@
+com\example\reservation\Reservation.class
+com\example\reservation\ReservationRepository.class
+com\example\reservation\ReservationDTO.class
+com\example\reservation\ReservationService.class
+com\example\hotel_service\HotelServiceApplication.class
+com\example\reservation\ReservationController.class

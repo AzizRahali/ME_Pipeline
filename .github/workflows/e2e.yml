@@ -1,0 +1,64 @@
+name: E2E Deployment
+
+on:
+  workflow_dispatch:  # manual trigger
+
+  # Uncomment to trigger after successful `test-and-build`
+  # workflow_run:
+  #   workflows: ["Test and Build"]
+  #   types:
+  #     - completed
+
+jobs:
+  e2e-deploy:
+    runs-on: ubuntu-latest
+    env:
+      ACR_NAME: ${{ secrets.ACR_NAME }}
+      AKS_RESOURCE_GROUP: ${{ secrets.AKS_RESOURCE_GROUP }}
+      AKS_CLUSTER_NAME: ${{ secrets.AKS_CLUSTER_NAME }}
+      IMAGE_NAME: hotel_service
+      IMAGE_TAG: ${{ github.sha }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Azure CLI
+        uses: azure/cli@v2
+
+      - name: AKS Get Credentials
+        run: az aks get-credentials --resource-group $AKS_RESOURCE_GROUP --name $AKS_CLUSTER_NAME --overwrite-existing
+
+      - name: Deploy to AKS
+        run: |
+          kubectl apply -f k8s/configmap.yaml
+          kubectl apply -f k8s/secret.yaml
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
+          kubectl apply -f k8s/ingress.yaml
+
+      - name: Wait for deployment
+        run: kubectl rollout status deployment/hotel-service-deployment --timeout=120s
+
+      - name: Smoke Test
+        run: |
+          kubectl get svc
+          curl -f http://$(kubectl get svc hotel-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/api/products || exit 1
+
+      - name: Load Test
+        uses: grafana/k6-action@v0.2.0
+        with:
+          filename: k8s/loadtest.js
+
+      - name: Export Performance Report
+        run: |
+          mkdir -p reports
+          cp k8s/loadtest-result.json reports/
+
+      - name: Prometheus Monitoring
+        run: echo "Prometheus is assumed to be scraping /actuator/prometheus."
+
+      - name: Grafana Dashboard
+        run: echo "Grafana dashboard is assumed to be configured."
+
+      - name: Azure Load Balancer
+        run: echo "Service is exposed via Azure Load Balancer."

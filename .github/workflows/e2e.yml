@@ -11,7 +11,7 @@ on:
 
 jobs:
   e2e-deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     env:
       ACR_NAME: ${{ secrets.ACR_NAME }}
       AKS_RESOURCE_GROUP: ${{ secrets.AKS_RESOURCE_GROUP }}

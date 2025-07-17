@@ -15,8 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ACR_NAME: ${{ secrets.ACR_NAME }}
-      ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
-      ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+      ACR_USERNAME: ${{ secrets.HOTELSERVICE_REGISTRY_USERNAME }}
+      ACR_PASSWORD: ${{ secrets.HOTELSERVICE_REGISTRY_PASSWORD }}
       IMAGE_NAME: hotel_service
       IMAGE_TAG: ${{ github.sha }}
     steps:

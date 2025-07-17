@@ -49,6 +49,7 @@ jobs:
           args: >
             -Dsonar.projectKey=AzizRahali_ME_Pipeline
             -Dsonar.organization=azizrahali
+            -Dsonar.java.binaries=target
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}

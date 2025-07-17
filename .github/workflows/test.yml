@@ -73,7 +73,7 @@ jobs:
 
   docker-build-push:
     name: Build and Push Docker Image
-    needs: sonarqube-analysis
+    needs: build-and-test
     runs-on: self-hosted
     env:
       ACR_USERNAME: ${{ secrets.HOTELSERVICE_REGISTRY_USERNAME }}

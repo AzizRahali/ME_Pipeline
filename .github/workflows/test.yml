@@ -46,6 +46,9 @@ jobs:
         uses: sonarsource/sonarqube-scan-action@v2
         with:
           projectBaseDir: .
+          args: >
+            -Dsonar.projectKey=AzizRahali_ME_Pipeline
+            -Dsonar.organization=azizrahali
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}

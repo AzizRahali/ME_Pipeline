@@ -1,7 +1,6 @@
 package com.example.reservation;
 
 import jakarta.persistence.*;
-import java.time.LocalDate;
 
 @Entity
 public class Reservation {
@@ -10,8 +9,6 @@ public class Reservation {
     private Long id;
     private String guestName;
     private String roomNumber;
-    private LocalDate checkInDate;
-    private LocalDate checkOutDate;
 
     // Getters and setters
     public Long getId() { return id; }
@@ -20,8 +17,4 @@ public class Reservation {
     public void setGuestName(String guestName) { this.guestName = guestName; }
     public String getRoomNumber() { return roomNumber; }
     public void setRoomNumber(String roomNumber) { this.roomNumber = roomNumber; }
-    public LocalDate getCheckInDate() { return checkInDate; }
-    public void setCheckInDate(LocalDate checkInDate) { this.checkInDate = checkInDate; }
-    public LocalDate getCheckOutDate() { return checkOutDate; }
-    public void setCheckOutDate(LocalDate checkOutDate) { this.checkOutDate = checkOutDate; }
 } 

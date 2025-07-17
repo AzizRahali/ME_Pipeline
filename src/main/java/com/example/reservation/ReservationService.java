@@ -20,8 +20,6 @@ public class ReservationService {
         Reservation reservation = new Reservation();
         reservation.setGuestName(dto.getGuestName());
         reservation.setRoomNumber(dto.getRoomNumber());
-        reservation.setCheckInDate(dto.getCheckInDate());
-        reservation.setCheckOutDate(dto.getCheckOutDate());
         Reservation saved = reservationRepository.save(reservation);
         return toDTO(saved);
     }
@@ -38,8 +36,6 @@ public class ReservationService {
         return reservationRepository.findById(id).map(reservation -> {
             reservation.setGuestName(dto.getGuestName());
             reservation.setRoomNumber(dto.getRoomNumber());
-            reservation.setCheckInDate(dto.getCheckInDate());
-            reservation.setCheckOutDate(dto.getCheckOutDate());
             return toDTO(reservationRepository.save(reservation));
         });
     }
@@ -53,6 +49,6 @@ public class ReservationService {
     }
 
     private ReservationDTO toDTO(Reservation reservation) {
-        return new ReservationDTO(reservation.getId(), reservation.getGuestName(), reservation.getRoomNumber(), reservation.getCheckInDate(), reservation.getCheckOutDate());
+        return new ReservationDTO(reservation.getId(), reservation.getGuestName(), reservation.getRoomNumber());
     }
 } 

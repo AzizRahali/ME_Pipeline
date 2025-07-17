@@ -1,7 +1,8 @@
-package com.example.hotel_service;
+package com.example.reservation;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 public class HotelServiceApplication {
@@ -9,5 +10,4 @@ public class HotelServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(HotelServiceApplication.class, args);
     }
-
 }

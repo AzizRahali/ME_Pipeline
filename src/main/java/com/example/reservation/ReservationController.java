@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/reservations")
+@RequestMapping("/reservations")
 public class ReservationController {
     private final ReservationService reservationService;
 
@@ -16,32 +16,34 @@ public class ReservationController {
         this.reservationService = reservationService;
     }
 
-    @PostMapping
+    @PostMapping("/addReservation")
     public ResponseEntity<ReservationDTO> createReservation(@RequestBody ReservationDTO dto) {
-        ReservationDTO created = reservationService.createReservation(dto);
+        ReservationDTO created = reservationService.createReservation(
+            new ReservationDTO(dto.getId(), dto.getGuestName(), dto.getRoomNumber())
+        );
         return ResponseEntity.ok(created);
     }
 
-    @GetMapping
+    @GetMapping("/getAll")
     public ResponseEntity<List<ReservationDTO>> getAllReservations() {
         return ResponseEntity.ok(reservationService.getAllReservations());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/getReservation/{id}")
     public ResponseEntity<ReservationDTO> getReservationById(@PathVariable Long id) {
         return reservationService.getReservationById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/update/{id}")
     public ResponseEntity<ReservationDTO> updateReservation(@PathVariable Long id, @RequestBody ReservationDTO dto) {
-        return reservationService.updateReservation(id, dto)
+        return reservationService.updateReservation(id, new ReservationDTO(dto.getId(), dto.getGuestName(), dto.getRoomNumber()))
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteReservation(@PathVariable Long id) {
         if (reservationService.deleteReservation(id)) {
             return ResponseEntity.noContent().build();

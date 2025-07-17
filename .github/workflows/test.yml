@@ -43,7 +43,7 @@ jobs:
 
   sonarqube-analysis:
     name: SonarQube Analysis
-    needs: unit-tests
+    needs: build-and-test
     runs-on: self-hosted
     steps:
       - name: Checkout code

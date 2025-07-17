@@ -1,20 +1,24 @@
-name: Test, Build and Deploy for HotelService
+name: Test, Build, Deploy Test Stage and E2E for HotelService
 
 on:
   push:
     branches: [ master ]
     paths:
       - '**'
-      - '.github/workflows/test.yml' # Adjust the path if needed
+      - '.github/workflows/test.yml'
   pull_request:
     branches: [ master ]
   workflow_dispatch:
+
+env:
+  ACR_NAME: devopsaziz2
+  TEST_ENV: "test"
+  E2E_ENV: "e2e"
 
 jobs:
   test-and-build:
     runs-on: self-hosted
     env:
-      ACR_NAME: ${{ secrets.ACR_NAME }}
       ACR_USERNAME: ${{ secrets.HOTELSERVICE_REGISTRY_USERNAME }}
       ACR_PASSWORD: ${{ secrets.HOTELSERVICE_REGISTRY_PASSWORD }}
       IMAGE_NAME: hotel_service
@@ -70,15 +74,19 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          tags: |
+            ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ env.TEST_ENV }}
 
-  deploy:
+  deploy-test:
     needs: test-and-build
     runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read
-
+    env:
+      CONTAINER_APP_NAME: hotelservice-test
+      RESOURCE_GROUP: devops-rg
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -90,14 +98,12 @@ jobs:
           tenant-id: ${{ secrets.HOTELSERVICE_AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.HOTELSERVICE_AZURE_SUBSCRIPTION_ID }}
 
-      - name: Deploy to Azure Container Apps
+      - name: Deploy Test Version to Azure Container Apps
         uses: azure/container-apps-deploy-action@v2
         with:
-          appSourcePath: ${{ github.workspace }}
-          dockerfilePath: ./Dockerfile
-          registryUrl: devopsaziz2.azurecr.io
+          registryUrl: ${{ env.ACR_NAME }}.azurecr.io
           registryUsername: ${{ secrets.HOTELSERVICE_REGISTRY_USERNAME }}
           registryPassword: ${{ secrets.HOTELSERVICE_REGISTRY_PASSWORD }}
-          containerAppName: hotelservice
-          resourceGroup: devops-rg
-          imageToBuild: devopsaziz2.azurecr.io/hotelservice:${{ github.sha }}
+          containerAppName: ${{ env.CONTAINER_APP_NAME }}
+          resourceGroup: ${{ env.RESOURCE_GROUP }}
+          imageToDeploy: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ env.TEST_ENV }}

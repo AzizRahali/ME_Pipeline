@@ -12,7 +12,7 @@ on:
 
 jobs:
   test-and-build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     env:
       ACR_NAME: ${{ secrets.ACR_NAME }}
       ACR_USERNAME: ${{ secrets.HOTELSERVICE_REGISTRY_USERNAME }}

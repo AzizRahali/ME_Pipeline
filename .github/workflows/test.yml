@@ -41,6 +41,12 @@ jobs:
       - name: Run tests with JaCoCo coverage
         run: mvn clean verify -Pcoverage --no-transfer-progress
 
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: hotel-jar
+          path: target/hotel_service-0.0.1-SNAPSHOT.jar
+
   sonarqube-analysis:
     name: SonarQube Analysis
     needs: build-and-test
@@ -80,6 +86,12 @@ jobs:
       ACR_PASSWORD: ${{ secrets.HOTELSERVICE_REGISTRY_PASSWORD }}
       IMAGE_TAG: ${{ github.sha }}
     steps:
+
+      - name: Download JAR artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: hotel-jar
+            
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -113,7 +125,6 @@ jobs:
     env:
       CONTAINER_APP_NAME: hotelservice-test
       RESOURCE_GROUP: devops-rg
-      IMAGE_TAG: ${{ github.sha }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

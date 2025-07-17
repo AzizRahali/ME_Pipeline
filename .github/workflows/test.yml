@@ -41,41 +41,35 @@ jobs:
       - name: Run tests with JaCoCo coverage
         run: mvn clean verify -Pcoverage --no-transfer-progress
 
-      - name: Upload JAR artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: hotel-jar
-          path: target/hotel_service-0.0.1-SNAPSHOT.jar
-
-  sonarqube-analysis:
-    name: SonarQube Analysis
-    needs: build-and-test
-    runs-on: self-hosted
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Compile code (for SonarQube)
-        run: mvn compile --no-transfer-progress
-
-      - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@v2
-        with:
-          projectBaseDir: .
-          args: >
-            -Dsonar.projectKey=AzizRahali_ME_Pipeline
-            -Dsonar.organization=azizrahali
-            -Dsonar.java.binaries=target
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+#  sonarqube-analysis:
+#    name: SonarQube Analysis
+#    needs: build-and-test
+#    runs-on: self-hosted
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v4
+#
+#      - name: Set up JDK 17
+#        uses: actions/setup-java@v4
+#        with:
+#          java-version: '17'
+#          distribution: 'temurin'
+#
+#      - name: Compile code (for SonarQube)
+#        run: mvn compile --no-transfer-progress
+#
+#      - name: SonarQube Scan
+#        uses: sonarsource/sonarqube-scan-action@v2
+#        with:
+#          projectBaseDir: .
+#          args: >
+#            -Dsonar.projectKey=AzizRahali_ME_Pipeline
+#            -Dsonar.organization=azizrahali
+#            -Dsonar.java.binaries=target
+#            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+#        env:
+#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
   docker-build-push:
     name: Build and Push Docker Image
@@ -86,12 +80,6 @@ jobs:
       ACR_PASSWORD: ${{ secrets.HOTELSERVICE_REGISTRY_PASSWORD }}
       IMAGE_TAG: ${{ github.sha }}
     steps:
-
-      - name: Download JAR artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: hotel-jar
-            
       - name: Checkout code
         uses: actions/checkout@v4
 

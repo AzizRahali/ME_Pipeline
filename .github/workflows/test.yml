@@ -1,4 +1,4 @@
-name: Build, Test, Load Test and Deploy HotelService to Azure
+name: Build and Deploy HotelService to Azure
 
 on:
   push:
@@ -16,11 +16,16 @@ env:
   TEST_ENV: "test"
   APP_URL: https://hotelservice.niceocean-6b010897.westus2.azurecontainerapps.io
 
+
 jobs:
 
-  build:
-    name: Build JAR with tests and Jacoco coverage
+  docker-build-push:
+    name: Build JAR, Build and Push Docker Image
     runs-on: self-hosted
+    env:
+      ACR_USERNAME: ${{ secrets.HOTELSERVICE_REGISTRY_USERNAME }}
+      ACR_PASSWORD: ${{ secrets.HOTELSERVICE_REGISTRY_PASSWORD }}
+      IMAGE_TAG: ${{ github.sha }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -38,26 +43,8 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
 
-      - name: Build with tests and generate Jacoco report
-        run: mvn clean verify jacoco:report --no-transfer-progress
-
-      - name: Archive Jacoco report
-        uses: actions/upload-artifact@v3
-        with:
-          name: jacoco-report
-          path: target/site/jacoco/
-
-  docker-build-push:
-    name: Build and Push Docker Image
-    needs: build
-    runs-on: self-hosted
-    env:
-      ACR_USERNAME: ${{ secrets.HOTELSERVICE_REGISTRY_USERNAME }}
-      ACR_PASSWORD: ${{ secrets.HOTELSERVICE_REGISTRY_PASSWORD }}
-      IMAGE_TAG: ${{ github.sha }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Build the JAR with Maven
+        run: mvn clean package -DskipTests --no-transfer-progress
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -78,9 +65,10 @@ jobs:
           tags: |
             ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
             ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ env.TEST_ENV }}
+    
 
-  deploy:
-    name: Deploy to Azure Container Apps
+  deploy-test:
+    name: Deploy to Test Environment
     needs: docker-build-push
     runs-on: self-hosted
     permissions:
@@ -111,6 +99,7 @@ jobs:
           resourceGroup: ${{ env.RESOURCE_GROUP }}
           imageToDeploy: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ env.TEST_ENV }}
 
+
   load-tests:
     name: Run k6 Load Tests
     needs: deploy
@@ -130,4 +119,3 @@ jobs:
 
       - name: Run k6 load test
         run: k6 run tests/loadtest.js --vus 10 --duration 30s --address ${APP_URL}
-

@@ -39,7 +39,7 @@ jobs:
       - name: Build with tests and generate JaCoCo coverage
         run: mvn clean verify jacoco:report --no-transfer-progress
 
-      - name: SonarCloud Scan
+      - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@v2
         with:
           projectBaseDir: .
@@ -84,4 +84,18 @@ jobs:
       - name: Azure Login
         uses: azure/login@v2
         with:
-          client-id: ${{ se
+          client-id: ${{ secrets.HOTELSERVICE_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.HOTELSERVICE_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.HOTELSERVICE_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to Azure Container Apps
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}
+          dockerfilePath: ./Dockerfile
+          registryUrl: devopsaziz2.azurecr.io
+          registryUsername: ${{ secrets.HOTELSERVICE_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.HOTELSERVICE_REGISTRY_PASSWORD }}
+          containerAppName: hotelservice
+          resourceGroup: devops-rg
+          imageToBuild: devopsaziz2.azurecr.io/hotelservice:${{ github.sha }}

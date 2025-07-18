@@ -102,8 +102,8 @@ jobs:
 
   load-tests:
     name: Run k6 Load Tests
-    needs: deploy
-    runs-on: ubuntu-latest
+    needs: deploy-test
+    runs-on: self-hosted
     steps:
       - name: Install k6
         run: |

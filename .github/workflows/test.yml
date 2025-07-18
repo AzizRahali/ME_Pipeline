@@ -39,19 +39,6 @@ jobs:
       - name: Build with tests and generate JaCoCo coverage
         run: mvn clean verify jacoco:report --no-transfer-progress
 
-      - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@v2
-        with:
-          projectBaseDir: .
-          args: >
-            -Dsonar.projectKey=AzizRahali_ME_Pipeline
-            -Dsonar.organization=azizrahali
-            -Dsonar.java.binaries=target
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 

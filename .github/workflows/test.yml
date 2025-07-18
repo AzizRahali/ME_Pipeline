@@ -105,17 +105,18 @@ jobs:
     needs: deploy-test
     runs-on: self-hosted
     steps:
-      - name: Install k6
-        run: |
-          sudo apt update
-          sudo apt install -y gnupg software-properties-common
-          curl -s https://dl.k6.io/key.gpg | sudo apt-key add -
-          echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
-          sudo apt update
-          sudo apt install -y k6
-
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Download and Install k6
+        run: |
+          Invoke-WebRequest -Uri https://github.com/grafana/k6/releases/download/v0.48.0/k6-v0.48.0-windows-amd64.zip -OutFile k6.zip
+          Expand-Archive .\k6.zip -DestinationPath .
+          $env:PATH += ";$PWD\k6-v0.48.0-windows-amd64"
+        shell: pwsh
+
       - name: Run k6 load test
-        run: k6 run tests/loadtest.js --vus 10 --duration 30s --address ${APP_URL}
+        run: |
+          $env:APP_URL = ${{ env.APP_URL }}
+          .\k6-v0.48.0-windows-amd64\k6.exe run github\tests\loadtest.js --vus 10 --duration 30s
+        shell: pwsh

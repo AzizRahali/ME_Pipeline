@@ -18,7 +18,7 @@ env:
 jobs:
 
   docker-build-push:
-    name: Build and Push Docker Image
+    name: Build JAR, Build and Push Docker Image
     runs-on: self-hosted
     env:
       ACR_USERNAME: ${{ secrets.HOTELSERVICE_REGISTRY_USERNAME }}
@@ -27,6 +27,22 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+
+      - name: Build the JAR with Maven
+        run: mvn clean package -DskipTests --no-transfer-progress
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3

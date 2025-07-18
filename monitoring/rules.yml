@@ -1,0 +1,128 @@
+groups:
+  - name: hotelservice-alerts
+    rules:
+
+      # --- Service Health Alerts ---
+      - alert: HotelServiceDown
+        expr: up{job="hotelservice-app"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "HotelService is DOWN! (Instance: {{ $labels.instance }})"
+          description: "The service has been down for more than 1 minute."
+
+      - alert: HighStartupTime
+        expr: application_started_time_seconds > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Service startup took too long ({{ $value }}s)"
+
+      # --- Database Alerts ---
+      - alert: HighActiveDBConnections
+        expr: hikaricp_connections_active{pool="HikariPool-1"} > 8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High active DB connections ({{ $value }}/10)"
+
+      - alert: DBConnectionTimeouts
+        expr: increase(hikaricp_connections_timeout_total{pool="HikariPool-1"}[5m]) > 0
+        labels:
+          severity: critical
+        annotations:
+          summary: "DB connection timeouts detected ({{ $value }})"
+
+      # --- JVM Memory Alerts ---
+      - alert: HighMemoryUsage
+        expr: (sum(jvm_memory_used_bytes{area="heap"}) by (instance) / sum(jvm_memory_max_bytes{area="heap"}) by (instance)) > 0.9
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High JVM Heap memory usage ({{ $value | humanizePercentage }})"
+
+      - alert: MetaspaceUsageCritical
+        expr: (jvm_memory_used_bytes{area="nonheap",id="Metaspace"} / jvm_memory_max_bytes{area="nonheap",id="Metaspace"}) > 0.9
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Metaspace usage too high ({{ $value | humanizePercentage }})"
+
+      # --- GC Alerts ---
+      - alert: HighGCPauseTime
+        expr: rate(jvm_gc_pause_seconds_sum[5m]) > 0.5
+        labels:
+          severity: warning
+        annotations:
+          summary: "High GC pause time ({{ $value }}s)"
+
+      - alert: FrequentGarbageCollection
+        expr: rate(jvm_gc_pause_seconds_count[5m]) > 5
+        labels:
+          severity: warning
+        annotations:
+          summary: "Frequent garbage collection ({{ $value }} GCs/sec)"
+
+      # --- Thread Alerts ---
+      - alert: HighThreadCount
+        expr: jvm_threads_live_threads > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High thread count ({{ $value }})"
+
+      - alert: DeadlockedThreads
+        expr: jvm_threads_states_threads{state="blocked"} > 5
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Potential deadlock ({{ $value }} blocked threads)"
+
+      # --- Disk Space Alerts ---
+      - alert: LowDiskSpace
+        expr: (disk_free_bytes{path="/."} / disk_total_bytes{path="/."}) < 0.2
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space ({{ $value | humanizePercentage }} free)"
+
+      # --- HTTP Request Alerts ---
+      - alert: HighRequestLatency
+        expr: http_server_requests_active_seconds_max > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High request latency detected ({{ $value }}s)"
+
+      - alert: HTTP5xxErrors
+        expr: rate(http_server_requests_active_seconds_count{status=~"5.."}[5m]) > 1
+        labels:
+          severity: critical
+        annotations:
+          summary: "High 5xx error rate ({{ $value }} errors/sec)"
+
+      # --- CPU Alerts ---
+      - alert: HighCPUUsage
+        expr: process_cpu_usage > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage ({{ $value | humanizePercentage }})"
+
+      # --- Logging Alerts ---
+      - alert: HighErrorLogRate
+        expr: rate(logback_events_total{level="error"}[5m]) > 1
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error log rate ({{ $value }} errors/min)"

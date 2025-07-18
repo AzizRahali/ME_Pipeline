@@ -1,0 +1,13 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s  # Added this to match alert evaluation frequency
+
+rule_files:
+  - "/etc/prometheus/rules.yml"  # Using absolute path for reliability
+
+scrape_configs:
+  - job_name: 'hotelservice-app'
+    metrics_path: /actuator/prometheus
+    scheme: http
+    static_configs:
+      - targets: ['hotelservice.niceocean-6b010897.westus2.azurecontainerapps.io:80']
